@@ -34,13 +34,13 @@ def find_block_num_by_timestamp(
         mid = low + (high - low) // 2
         mid_block = blockchain.wait_for_and_get_block(mid)
         is_equal_timestamp = (
-            (mid_block["timestamp"] - timedelta(seconds=3)).timestamp()
+            (mid_block["timestamp"] - timedelta(seconds=3))
             <= key_timestamp
-            <= (mid_block["timestamp"] + timedelta(seconds=3)).timestamp()
+            <= (mid_block["timestamp"] + timedelta(seconds=3))
         )
         if is_equal_timestamp:
             return mid
-        elif mid_block["timestamp"].timestamp() < key_timestamp:
+        elif mid_block["timestamp"] < key_timestamp:
             low = mid + 1
         else:
             high = mid - 1
