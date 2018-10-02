@@ -401,14 +401,3 @@ def voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
         if account not in votes:
             return False
     return True
-
-
-@cli.command()
-def test():
-    author = "espoem"
-    q = Query(tag=author)
-    d = Discussions().get_discussions(
-        discussion_type="blog", discussion_query=q, limit=100
-    )
-    for post in d:
-        print(post["created"], post["url"])
