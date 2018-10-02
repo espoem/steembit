@@ -1,0 +1,13 @@
+__pycache__
+venv
+
+.idea
+.vscode
+
+*.egg-info
+tags
+build
+dist
+
+*.log
+config.json
