@@ -97,7 +97,7 @@ def is_not_authored_by(accounts, post: Comment):
     help="Include resteemed entries if authors are specified.",
 )
 @click.option(
-    "--start",
+    "--start-datetime",
     default=f"{datetime.now()-timedelta(days=6.5):%Y-%m-%dT%H:%M:00}",
     type=click.DateTime(DATETIME_FORMATS),
     is_flag=False,
@@ -106,7 +106,7 @@ def is_not_authored_by(accounts, post: Comment):
     help="Posts or comments published after this datetime.",
 )
 @click.option(
-    "--end",
+    "--end-datetime",
     default=f"{datetime.now():%Y-%m-%dT00:00:00}",
     type=click.DateTime(DATETIME_FORMATS),
     required=False,
@@ -147,8 +147,8 @@ def cli(
     authors,
     wo_authors,
     with_resteems,
-    start,
-    end,
+    start_datetime,
+    end_datetime,
     voters,
     wo_voters,
     limit,
@@ -165,9 +165,9 @@ def cli(
     LOGGER.addHandler(SH)
     LOGGER.info("Starting script")
 
-    if start > end:
+    if start_datetime > end_datetime:
         click.echo(
-            f"Starting datetime ({start}) must be older than ending datetime ({end})."
+            f"Starting datetime ({start_datetime}) must be older than ending datetime ({end_datetime})."
         )
         ctx.abort()
 
@@ -175,8 +175,8 @@ def cli(
     ctx.ensure_object(dict)
     ctx.obj = {
         "TAGS": tags,
-        "DATETIME_START": start,
-        "DATETIME_END": end,
+        "DATETIME_START": start_datetime,
+        "DATETIME_END": end_datetime,
         "VOTERS": voters,
         "LIMIT": limit,
     }
