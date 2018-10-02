@@ -54,6 +54,7 @@ def is_author(account: str, post: Comment):
 def is_authored_by_any(accounts, post: Comment):
     return post["author"] in accounts
 
+
 def is_not_authored_by(accounts, post: Comment):
     return not is_authored_by_any(accounts, post)
 
@@ -113,22 +114,6 @@ def is_not_authored_by(accounts, post: Comment):
     help="Posts or comments published before this datetime.",
 )
 @click.option(
-    "--min-age",
-    default=0.25,
-    required=False,
-    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
-    show_default=True,
-    help="Minimum age of a post or comment in hours.",
-)
-@click.option(
-    "--max-age",
-    default=6 * 24,
-    required=False,
-    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
-    show_default=True,
-    help="Maximum age of a post or comment in hours.",
-)
-@click.option(
     "--voters",
     required=False,
     default="",
@@ -164,8 +149,6 @@ def cli(
     with_resteems,
     start,
     end,
-    min_age,
-    max_age,
     voters,
     wo_voters,
     limit,
@@ -182,11 +165,6 @@ def cli(
     LOGGER.addHandler(SH)
     LOGGER.info("Starting script")
 
-    if max_age < min_age:
-        click.echo(
-            f"Min age ({min_age} hours) can't be higher than max age ({max_age} hours)."
-        )
-        exit(1)
     if start > end:
         click.echo(
             f"Starting datetime ({start}) must be older than ending datetime ({end})."
@@ -199,8 +177,6 @@ def cli(
         "TAGS": tags,
         "DATETIME_START": start,
         "DATETIME_END": end,
-        "MIN_AGE": min_age,
-        "MAX_AGE": max_age,
         "VOTERS": voters,
         "LIMIT": limit,
     }
@@ -213,7 +189,11 @@ def cli(
     has_selected_author = (
         partial(is_authored_by_any, authors) if authors else lambda x: True
     )
-    wo_excluded_authors = partial(is_not_authored_by, wo_authors) if wo_authors else lambda x: True
+    wo_excluded_authors = (
+        partial(is_not_authored_by, wo_authors)
+        if wo_authors
+        else lambda x: True
+    )
 
     if tags:
         for tag in tags:
@@ -302,8 +282,24 @@ def print_results(ctx):
     is_flag=True,
     help="Force voting to all results.",
 )
+@click.option(
+    "--min-age",
+    default=0.25,
+    required=False,
+    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
+    show_default=True,
+    help="Minimum age of a post or comment in hours.",
+)
+@click.option(
+    "--max-age",
+    default=6 * 24,
+    required=False,
+    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
+    show_default=True,
+    help="Maximum age of a post or comment in hours.",
+)
 @click.pass_context
-def vote(ctx, weight, uniform, accounts, force):
+def vote(ctx, weight, uniform, accounts, force, min_age, max_age):
     """Vote fetched posts and comments.
 
     :param ctx: Click context
@@ -317,6 +313,13 @@ def vote(ctx, weight, uniform, accounts, force):
     :param force: A flag to override previous votes
     :type force: bool
     """
+
+    if max_age < min_age:
+        click.echo(
+            f"Min age ({min_age} hours) can't be higher than max age ({max_age} hours)."
+        )
+        exit(1)
+
     if weight and uniform:
         LOGGER.error("You can specify only fixed weight or uniform weight.")
         ctx.abort()
@@ -331,9 +334,9 @@ def vote(ctx, weight, uniform, accounts, force):
     results = [
         r
         for r in results
-        if timedelta(hours=ctx.obj["MIN_AGE"]) < r.time_elapsed()
+        if timedelta(hours=min_age) < r.time_elapsed() < timedelta(hours=max_age)
     ]
-    LOGGER.info("%d are old enough", len(results))
+    LOGGER.info("%d are in valid voting time range.", len(results))
 
     if not weight:
         try:
@@ -352,9 +355,7 @@ def vote(ctx, weight, uniform, accounts, force):
             time.sleep(3)
 
 
-def vote_discussion(
-    discussion: Comment, voter: str, weight: float
-) -> bool:
+def vote_discussion(discussion: Comment, voter: str, weight: float) -> bool:
     """Vote a discussion (post, comment) with selected account and vote weight.
 
     :param discussion: Post or comment
