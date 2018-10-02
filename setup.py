@@ -7,7 +7,7 @@ with open(os.path.join(here, "./README.md"), "r") as f:
 
 setup(
     name="steembit",
-    version="0.0.1",
+    version="0.0.2",
     description="Simple CLI tool for Steem users",
     long_description=readme,
     long_description_content_type="text/markdown",
