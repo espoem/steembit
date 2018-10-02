@@ -169,7 +169,7 @@ def cli(
         click.echo(
             f"Starting datetime ({start}) must be older than ending datetime ({end})."
         )
-        exit(1)
+        ctx.abort()
 
     # pass input vars to context
     ctx.ensure_object(dict)
@@ -318,7 +318,7 @@ def vote(ctx, weight, uniform, accounts, force, min_age, max_age):
         click.echo(
             f"Min age ({min_age} hours) can't be higher than max age ({max_age} hours)."
         )
-        exit(1)
+        ctx.abort()
 
     if weight and uniform:
         LOGGER.error("You can specify only fixed weight or uniform weight.")
