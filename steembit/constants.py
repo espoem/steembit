@@ -10,7 +10,7 @@ LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(__file__), "steembit.log"),
     level=logging.DEBUG,
-    format=LOG_FORMAT,
+    format=LOG_FORMAT
 )
 
 
@@ -20,7 +20,7 @@ with open(os.path.join(os.path.dirname(__file__), "config.json"), "r") as f:
 
 # Date and time
 TODAY = datetime.date(datetime.now())
-DATETIME_FORMATS = ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"]
+DATETIME_FORMATS = ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S%z"]
 
 # Post age range
 MIN_AGE_HOURS = 0
