@@ -24,8 +24,8 @@ def is_paid_out(post: Comment):
     return post["last_payout"] > dt
 
 
-def find_block_num_by_timestamp(
-    blockchain: Blockchain, low_block_num, high_block_num, key_timestamp
+def find_block_num_by_datetime(
+    blockchain: Blockchain, low_block_num, high_block_num, key_datetime
 ):
     low = low_block_num
     high = high_block_num
@@ -35,12 +35,12 @@ def find_block_num_by_timestamp(
         mid_block = blockchain.wait_for_and_get_block(mid)
         is_equal_timestamp = (
             (mid_block["timestamp"] - timedelta(seconds=3))
-            <= key_timestamp
+            <= key_datetime
             <= (mid_block["timestamp"] + timedelta(seconds=3))
         )
         if is_equal_timestamp:
             return mid
-        elif mid_block["timestamp"] < key_timestamp:
+        elif mid_block["timestamp"] < key_datetime:
             low = mid + 1
         else:
             high = mid - 1

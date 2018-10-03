@@ -21,7 +21,7 @@ from .constants import (
     MIN_AGE_HOURS,
     STM,
 )
-from .utils import remove_duplicates, is_paid_out, find_block_num_by_timestamp
+from .utils import remove_duplicates, is_paid_out, find_block_num_by_datetime
 
 LOGGER = logging.getLogger(__name__)
 
@@ -209,7 +209,7 @@ def cli(
     if end_datetime:
         blockchain = Blockchain(steem_instance=STM, mode='head')
         current_block_num = blockchain.get_current_block_num()
-        starting_block_num = find_block_num_by_timestamp(blockchain=blockchain, low_block_num=0, high_block_num=current_block_num, key_timestamp=end_datetime)
+        starting_block_num = find_block_num_by_datetime(blockchain=blockchain, low_block_num=0, high_block_num=current_block_num, key_datetime=end_datetime)
 
         for op in blockchain.stream(opNames=['comment'], start=starting_block_num, threading=True):
             if not op.get('parent_author'):
