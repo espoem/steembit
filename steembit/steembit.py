@@ -178,9 +178,8 @@ def cli(
     if not start_datetime.tzinfo:
         start_datetime = start_datetime.replace(tzinfo=timezone.utc)
 
-    # pass input vars to context
     LOGGER.info(ctx.params)
-
+    # pass input vars to context
     ctx.ensure_object(dict)
     ctx.obj = {
         "TAGS": tags,
