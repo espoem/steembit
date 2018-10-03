@@ -21,7 +21,7 @@ from .constants import (
     MIN_AGE_HOURS,
     STM,
 )
-from .utils import remove_duplicates, is_paid_out
+from .utils import remove_duplicates, is_paid_out, find_block_num_by_timestamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ def is_not_authored_by(accounts, post: Comment):
 )
 @click.option(
     "--start-datetime",
-    default=f"{datetime.now()-timedelta(days=6.5):%Y-%m-%dT%H:%M:00}",
+    default=f"{(datetime.utcnow()-timedelta(days=6.5)).replace(tzinfo=timezone.utc):%Y-%m-%dT%H:%M:00%z}",
     type=click.DateTime(DATETIME_FORMATS),
     is_flag=False,
     required=False,
@@ -107,7 +107,7 @@ def is_not_authored_by(accounts, post: Comment):
 )
 @click.option(
     "--end-datetime",
-    default=f"{datetime.now():%Y-%m-%dT00:00:00}",
+    default=f"{datetime.utcnow().replace(tzinfo=timezone.utc):%Y-%m-%dT00:00:00%z}",
     type=click.DateTime(DATETIME_FORMATS),
     required=False,
     show_default=True,
@@ -116,7 +116,6 @@ def is_not_authored_by(accounts, post: Comment):
 @click.option(
     "--voters",
     required=False,
-    default="",
     type=click.STRING,
     callback=split_values_by_comma_callback,
     help="Keep posts that were upvoted by selected accounts.",
@@ -124,7 +123,6 @@ def is_not_authored_by(accounts, post: Comment):
 @click.option(
     "--wo-voters",
     required=False,
-    default="",
     type=click.STRING,
     callback=split_values_by_comma_callback,
     help="Keep posts that were not upvoted by selected accounts.",
@@ -165,13 +163,24 @@ def cli(
     LOGGER.addHandler(SH)
     LOGGER.info("Starting script")
 
-    if start_datetime > end_datetime:
-        click.echo(
-            f"Starting datetime ({start_datetime}) must be older than ending datetime ({end_datetime})."
-        )
+    try:
+        if start_datetime > end_datetime:
+            click.echo(
+                f"Starting datetime ({start_datetime}) must be older than ending datetime ({end_datetime})."
+            )
+            ctx.abort()
+    except TypeError:
+        click.echo("Use the same format for starting and ending datetime.")
         ctx.abort()
 
+    if not end_datetime.tzinfo:
+        end_datetime = end_datetime.replace(tzinfo=timezone.utc)
+    if not start_datetime.tzinfo:
+        start_datetime = start_datetime.replace(tzinfo=timezone.utc)
+
     # pass input vars to context
+    LOGGER.info(ctx.params)
+
     ctx.ensure_object(dict)
     ctx.obj = {
         "TAGS": tags,
@@ -195,9 +204,23 @@ def cli(
         else lambda x: True
     )
 
+    tags_start_author = ""
+    tags_start_permlink = ""
+    if end_datetime:
+        blockchain = Blockchain(steem_instance=STM, mode='head')
+        current_block_num = blockchain.get_current_block_num()
+        starting_block_num = find_block_num_by_timestamp(blockchain=blockchain, low_block_num=0, high_block_num=current_block_num, key_timestamp=end_datetime)
+
+        for op in blockchain.stream(opNames=['comment'], start=starting_block_num, threading=True):
+            if not op.get('parent_author'):
+                LOGGER.info(op)
+                tags_start_author = op["author"]
+                tags_start_permlink = op["permlink"]
+                break
+
     if tags:
         for tag in tags:
-            q = Query(tag=tag)
+            q = Query(tag=tag, start_author=tags_start_author, start_permlink=tags_start_permlink)
             discussions = Discussions(steem_instance=STM).get_discussions(
                 discussion_type="created", discussion_query=q, limit=q_limit
             )
@@ -208,7 +231,7 @@ def cli(
                 and has_selected_author(d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
-                and not voted_by_any(wo_voters, d)
+                and not_voted_by_any(wo_voters, d)
             ]
 
     if authors:
@@ -227,9 +250,8 @@ def cli(
                 and include_resteems(d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
-                and not voted_by_any(wo_voters, d)
+                and not_voted_by_any(wo_voters, d)
             ]
-
     results = list(remove_duplicates("authorperm", results))
     results.sort(key=lambda x: x["created"], reverse=True)
     results = results[:limit]
@@ -399,6 +421,11 @@ def voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     """
     votes = discussion.get_votes()
     for account in voters:
-        if account not in votes:
-            return False
+        if account in votes:
+            return True
+    return not voters
+
+def not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
+    if voters:
+        return not voted_by_any(voters, discussion)
     return True
