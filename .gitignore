@@ -11,3 +11,4 @@ dist
 
 *.log
 config.json
+/test.py
