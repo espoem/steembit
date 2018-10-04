@@ -47,6 +47,17 @@ def find_block_num_by_datetime(
 
     return None
 
+def get_block_number(dt: datetime):
+    BLOCKS_PER_SECOND = 3
+    ANCHOR_BLOCK = 26471727
+    ANCHOR_DATE = datetime(year=2018, month=10, day=3, hour=2, minute=24, second=54, tzinfo=timezone.utc)
+
+    if dt and not dt.tzinfo:
+        dt.replace(tzinfo=timezone.utc)
+    delta_blocks = (dt - ANCHOR_DATE).total_seconds() // BLOCKS_PER_SECOND
+    block_num = ANCHOR_BLOCK + delta_blocks
+    return block_num
+
 
 def remove_duplicates(key: str, iterable: typing.Iterable):
     unique = {}

@@ -21,7 +21,7 @@ from .constants import (
     MIN_AGE_HOURS,
     STM,
 )
-from .utils import remove_duplicates, is_paid_out, find_block_num_by_datetime
+from .utils import remove_duplicates, is_paid_out
 
 LOGGER = logging.getLogger(__name__)
 
