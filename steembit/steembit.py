@@ -97,23 +97,6 @@ def is_not_authored_by(accounts, post: Comment):
     help="Include resteemed entries if authors are specified.",
 )
 @click.option(
-    "--start-datetime",
-    default=f"{(datetime.utcnow()-timedelta(days=6.5)).replace(tzinfo=timezone.utc):%Y-%m-%dT%H:%M:00%z}",
-    type=click.DateTime(DATETIME_FORMATS),
-    is_flag=False,
-    required=False,
-    show_default=True,
-    help="Posts or comments published after this datetime.",
-)
-@click.option(
-    "--end-datetime",
-    default=f"{datetime.utcnow().replace(tzinfo=timezone.utc):%Y-%m-%dT00:00:00%z}",
-    type=click.DateTime(DATETIME_FORMATS),
-    required=False,
-    show_default=True,
-    help="Posts or comments published before this datetime.",
-)
-@click.option(
     "--voters",
     required=False,
     type=click.STRING,
@@ -145,8 +128,6 @@ def cli(
     authors,
     wo_authors,
     with_resteems,
-    start_datetime,
-    end_datetime,
     voters,
     wo_voters,
     limit,
@@ -156,35 +137,18 @@ def cli(
     VERBOSITY = ["critical", "error", "warn", "info", "debug"][
         int(min(verbose, 4))
     ]
-    LOGGER.setLevel(getattr(logging, VERBOSITY.upper()))
+    LOGGER.setLevel(logging.DEBUG)
     FORMATTER = logging.Formatter(LOG_FORMAT)
     SH = logging.StreamHandler()
+    SH.setLevel(getattr(logging, VERBOSITY.upper()))
     SH.setFormatter(FORMATTER)
     LOGGER.addHandler(SH)
     LOGGER.info("Starting script")
 
-    try:
-        if start_datetime > end_datetime:
-            click.echo(
-                f"Starting datetime ({start_datetime}) must be older than ending datetime ({end_datetime})."
-            )
-            ctx.abort()
-    except TypeError:
-        click.echo("Use the same format for starting and ending datetime.")
-        ctx.abort()
-
-    if not end_datetime.tzinfo:
-        end_datetime = end_datetime.replace(tzinfo=timezone.utc)
-    if not start_datetime.tzinfo:
-        start_datetime = start_datetime.replace(tzinfo=timezone.utc)
-
-    LOGGER.info(ctx.params)
     # pass input vars to context
     ctx.ensure_object(dict)
     ctx.obj = {
         "TAGS": tags,
-        "DATETIME_START": start_datetime,
-        "DATETIME_END": end_datetime,
         "VOTERS": voters,
         "LIMIT": limit,
     }
@@ -203,23 +167,9 @@ def cli(
         else lambda x: True
     )
 
-    tags_start_author = ""
-    tags_start_permlink = ""
-    if end_datetime:
-        blockchain = Blockchain(steem_instance=STM, mode='head')
-        current_block_num = blockchain.get_current_block_num()
-        starting_block_num = find_block_num_by_datetime(blockchain=blockchain, low_block_num=0, high_block_num=current_block_num, key_datetime=end_datetime)
-
-        for op in blockchain.stream(opNames=['comment'], start=starting_block_num, threading=True):
-            if not op.get('parent_author'):
-                LOGGER.info(op)
-                tags_start_author = op["author"]
-                tags_start_permlink = op["permlink"]
-                break
-
     if tags:
         for tag in tags:
-            q = Query(tag=tag, start_author=tags_start_author, start_permlink=tags_start_permlink)
+            q = Query(tag=tag)
             discussions = Discussions(steem_instance=STM).get_discussions(
                 discussion_type="created", discussion_query=q, limit=q_limit
             )

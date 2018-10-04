@@ -41,4 +41,5 @@ STM = Steem(
     ],
     keys=[config["posting_key"]],
     timeout=15,
+    appbase=True,
 )
