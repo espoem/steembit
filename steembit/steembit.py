@@ -2,19 +2,14 @@ import logging
 import math
 import time
 import typing
-from datetime import datetime, timedelta, timezone, tzinfo
-from functools import partial
-from time import strftime
+from datetime import datetime, timedelta, tzinfo
 
 import beem
 import click
-from beem import Steem
-from beem.blockchain import Blockchain
 from beem.comment import Comment
 from beem.discussions import Discussions, Query
 
 from .constants import (
-    ACCOUNT,
     DATETIME_FORMATS,
     LOG_FORMAT,
     MAX_AGE_HOURS,
