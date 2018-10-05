@@ -59,6 +59,15 @@ def is_author(account: str, post: dict) -> bool:
 
 
 def is_authored_by_any(accounts: typing.Iterable[str], post: dict) -> bool:
+    """Check that a post is authored by one of selected authors.
+
+    :param accounts: Selected authors
+    :type accounts: typing.Iterable[str]
+    :param post: A post to check
+    :type post: dict
+    :return: True if the post has a selected author else false
+    :rtype: bool
+    """
     return not accounts or post.get("author") in accounts
 
 
@@ -161,9 +170,7 @@ def cli(
 
     results = []
     q_limit = 100 if limit <= 100 else math.ceil(limit * 1.25)
-    has_selected_author = (
-        partial(is_authored_by_any, authors) if authors else lambda x: True
-    )
+
     wo_excluded_authors = (
         partial(is_not_authored_by, wo_authors)
         if wo_authors
@@ -180,7 +187,7 @@ def cli(
                 d
                 for d in discussions
                 if has_all_tags(tags, d)
-                and has_selected_author(d)
+                and is_authored_by_any(authors, d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
                 and not_voted_by_any(wo_voters, d)
@@ -196,7 +203,7 @@ def cli(
                 d
                 for d in discussions
                 if has_all_tags(tags, d)
-                and has_selected_author(d)
+                and is_authored_by_any(authors, d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
                 and not_voted_by_any(wo_voters, d)
