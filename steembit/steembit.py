@@ -380,6 +380,15 @@ def voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     return not voters
 
 def not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
+    """Checks if a post (comment) was not voted by any of the selected accounts.
+
+    :param voters: A collection of voters
+    :type voters: typing.Collection
+    :param discussion: Post or comment
+    :type discussion: Comment
+    :return: True if none of the accounts voted else False
+    :rtype: bool
+    """
     if voters:
         return not voted_by_any(voters, discussion)
     return True
