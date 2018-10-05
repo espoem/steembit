@@ -40,7 +40,14 @@ def is_not_negative_callback(ctx, param, value):
     return value
 
 
-def all_tags_in(tags: typing.Iterable[str], post: dict):
+def has_all_tags(tags: typing.Iterable[str], post: dict):
+    """Check that all tags are included.
+
+    :param tags: Tags that should be included
+    :type tags: typing.Iterable[str]
+    :param post: A post with tags
+    :type post: dict
+    """
     for tag in tags:
         if tag not in post.get("tags", []):
             return False
@@ -154,7 +161,6 @@ def cli(
 
     results = []
     q_limit = 100 if limit <= 100 else math.ceil(limit * 1.25)
-    has_all_tags = partial(all_tags_in, tags) if all_tags else lambda x: True
     has_selected_author = (
         partial(is_authored_by_any, authors) if authors else lambda x: True
     )
@@ -173,7 +179,7 @@ def cli(
             results += [
                 d
                 for d in discussions
-                if has_all_tags(d)
+                if has_all_tags(tags, d)
                 and has_selected_author(d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
@@ -189,7 +195,7 @@ def cli(
             results += [
                 d
                 for d in discussions
-                if has_all_tags(d)
+                if has_all_tags(tags, d)
                 and has_selected_author(d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
