@@ -92,13 +92,6 @@ def is_not_authored_by(accounts: typing.Iterable[str], post: dict) -> bool:
     help="Exclude results with selected authors. Separate them with comma(,).",
 )
 @click.option(
-    "--with-resteems",
-    required=False,
-    is_flag=True,
-    default=False,
-    help="Include resteemed entries if authors are specified.",
-)
-@click.option(
     "--voters",
     required=False,
     type=click.STRING,
@@ -129,7 +122,6 @@ def cli(
     all_tags,
     authors,
     wo_authors,
-    with_resteems,
     voters,
     wo_voters,
     limit,
@@ -189,9 +181,6 @@ def cli(
             ]
 
     if authors:
-        include_resteems = (
-            has_selected_author if not with_resteems else lambda x: True
-        )
         for author in authors:
             q = Query(tag=author)
             discussions = Discussions(steem_instance=STM).get_discussions(
@@ -201,7 +190,7 @@ def cli(
                 d
                 for d in discussions
                 if has_all_tags(d)
-                and include_resteems(d)
+                and has_selected_author(d)
                 and wo_excluded_authors(d)
                 and voted_by_any(voters, d)
                 and not_voted_by_any(wo_voters, d)
