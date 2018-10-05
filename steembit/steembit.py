@@ -40,23 +40,25 @@ def is_not_negative_callback(ctx, param, value):
     return value
 
 
-def all_tags_in(tags: list, post: Comment):
+def all_tags_in(tags: typing.Iterable[str], post: dict):
     for tag in tags:
         if tag not in post.get("tags", []):
             return False
     return True
 
 
-def is_author(account: str, post: Comment):
-    return account == post["author"]
+def is_author(account: str, post: dict) -> bool:
+    return account == post.get("author")
 
 
-def is_authored_by_any(accounts, post: Comment):
-    return post["author"] in accounts
+def is_authored_by_any(accounts: typing.Iterable[str], post: dict) -> bool:
+    return not accounts or post.get("author") in accounts
 
 
-def is_not_authored_by(accounts, post: Comment):
-    return not is_authored_by_any(accounts, post)
+def is_not_authored_by(accounts: typing.Iterable[str], post: dict) -> bool:
+    if accounts:
+        return not is_authored_by_any(accounts, post)
+    return True
 
 
 @click.group()
