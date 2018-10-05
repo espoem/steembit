@@ -21,7 +21,7 @@ from .constants import (
     MIN_AGE_HOURS,
     STM,
 )
-from .utils import remove_duplicates, is_paid_out
+from .utils import is_paid_out, remove_duplicates
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,21 +141,9 @@ def is_not_authored_by(accounts: typing.Iterable[str], post: dict) -> bool:
 )
 @click.option("--verbose", default=3, type=click.INT, help="Verbosity")
 @click.pass_context
-def cli(
-    ctx,
-    tags,
-    all_tags,
-    authors,
-    wo_authors,
-    voters,
-    wo_voters,
-    limit,
-    verbose,
-):
+def cli(ctx, tags, all_tags, authors, wo_authors, voters, wo_voters, limit, verbose):
     # logger
-    VERBOSITY = ["critical", "error", "warn", "info", "debug"][
-        int(min(verbose, 4))
-    ]
+    VERBOSITY = ["critical", "error", "warn", "info", "debug"][int(min(verbose, 4))]
     LOGGER.setLevel(logging.DEBUG)
     FORMATTER = logging.Formatter(LOG_FORMAT)
     SH = logging.StreamHandler()
@@ -172,7 +160,7 @@ def cli(
         "VOTERS_EXCLUDED": wo_voters,
         "LIMIT": limit,
         "AUTHORS": authors,
-        "AUTHORS_EXCLUDED": wo_authors
+        "AUTHORS_EXCLUDED": wo_authors,
     }
     LOGGER.debug("Input params")
     LOGGER.debug(ctx.obj)
@@ -231,9 +219,7 @@ def print_results(ctx):
     results = ctx.obj["RESULTS"]
     pad = len(str(len(results)))
     for idx, result in enumerate(results, 1):
-        LOGGER.info(
-            f'{idx:0{pad}}::Created {result["created"]}::{result["url"]}'
-        )
+        LOGGER.info(f'{idx:0{pad}}::Created {result["created"]}::{result["url"]}')
 
 
 @cli.command()
@@ -257,11 +243,7 @@ def print_results(ctx):
     help="Accounts with permissions to broadcast transactions.",
 )
 @click.option(
-    "-f",
-    "--force",
-    required=False,
-    is_flag=True,
-    help="Force voting to all results.",
+    "-f", "--force", required=False, is_flag=True, help="Force voting to all results."
 )
 @click.option(
     "--min-age",
@@ -354,9 +336,7 @@ def vote_discussion(discussion: Comment, voter: str, weight: float) -> bool:
         LOGGER.info("Invalid post, can't vote. %s", discussion["url"])
         return False
     except:
-        LOGGER.exception(
-            "Error during upvoting with %s. %s", voter, discussion["url"]
-        )
+        LOGGER.exception("Error during upvoting with %s. %s", voter, discussion["url"])
         return False
     else:
         LOGGER.info(
@@ -383,6 +363,7 @@ def is_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
         if account in votes:
             return True
     return not voters
+
 
 def is_not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     """Checks if a post (comment) was not voted by any of the selected accounts.
