@@ -150,7 +150,10 @@ def cli(
     ctx.obj = {
         "TAGS": tags,
         "VOTERS": voters,
+        "VOTERS_EXCLUDED": wo_voters,
         "LIMIT": limit,
+        "AUTHORS": authors,
+        "AUTHORS_EXCLUDED": wo_authors
     }
     LOGGER.debug("Input params")
     LOGGER.debug(ctx.obj)
