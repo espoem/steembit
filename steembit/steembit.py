@@ -244,7 +244,7 @@ def print_results(ctx):
     "--min-age",
     default=0.25,
     required=False,
-    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
+    type=click.FloatRange(min=0, max=MAX_AGE_HOURS, clamp=True),
     show_default=True,
     help="Minimum age of a post or comment in hours.",
 )
@@ -252,7 +252,7 @@ def print_results(ctx):
     "--max-age",
     default=6 * 24,
     required=False,
-    type=click.FloatRange(min=MIN_AGE_HOURS, max=MAX_AGE_HOURS, clamp=True),
+    type=click.FloatRange(min=0, max=MAX_AGE_HOURS, clamp=True),
     show_default=True,
     help="Maximum age of a post or comment in hours.",
 )
