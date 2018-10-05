@@ -63,5 +63,4 @@ def remove_duplicates(key: str, iterable: typing.Iterable):
     unique = {}
     for item in iterable:
         unique[item[key]] = item
-        # unique.setdefault(item[key], item)
     return unique.values()
