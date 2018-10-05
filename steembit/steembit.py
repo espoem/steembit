@@ -189,8 +189,8 @@ def cli(
                 if has_all_tags(tags, d)
                 and is_authored_by_any(authors, d)
                 and wo_excluded_authors(d)
-                and voted_by_any(voters, d)
-                and not_voted_by_any(wo_voters, d)
+                and is_voted_by_any(voters, d)
+                and is_not_voted_by_any(wo_voters, d)
             ]
 
     if authors:
@@ -205,8 +205,8 @@ def cli(
                 if has_all_tags(tags, d)
                 and is_authored_by_any(authors, d)
                 and wo_excluded_authors(d)
-                and voted_by_any(voters, d)
-                and not_voted_by_any(wo_voters, d)
+                and is_voted_by_any(voters, d)
+                and is_not_voted_by_any(wo_voters, d)
             ]
     results = list(remove_duplicates("authorperm", results))
     results.sort(key=lambda x: x["created"], reverse=True)
@@ -325,7 +325,7 @@ def vote(ctx, weight, uniform, accounts, force, min_age, max_age):
     for result in results:
         voted = False
         for account in accounts:
-            if voted_by_any([account], result) and not force:
+            if is_voted_by_any([account], result) and not force:
                 LOGGER.info("Already voted by %s. %s", account, result["url"])
                 continue
             voted = vote_discussion(result, account, weight)
@@ -365,7 +365,7 @@ def vote_discussion(discussion: Comment, voter: str, weight: float) -> bool:
     return True
 
 
-def voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
+def is_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     """Check if a post (comment) was voted by any of selected accounts.
 
     :param voters: A collection of voters
@@ -381,7 +381,7 @@ def voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
             return True
     return not voters
 
-def not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
+def is_not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     """Checks if a post (comment) was not voted by any of the selected accounts.
 
     :param voters: A collection of voters
@@ -392,5 +392,5 @@ def not_voted_by_any(voters: typing.Collection, discussion: Comment) -> bool:
     :rtype: bool
     """
     if voters:
-        return not voted_by_any(voters, discussion)
+        return not is_voted_by_any(voters, discussion)
     return True
