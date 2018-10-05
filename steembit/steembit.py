@@ -72,6 +72,15 @@ def is_authored_by_any(accounts: typing.Iterable[str], post: dict) -> bool:
 
 
 def is_not_authored_by(accounts: typing.Iterable[str], post: dict) -> bool:
+    """Check that a post is not authored by any of selected authors.
+
+    :param accounts: Selected authors
+    :type accounts: typing.Iterable[str]
+    :param post: A post to check
+    :type post: dict
+    :return: True if not authored by selected authors else false
+    :rtype: bool
+    """
     if accounts:
         return not is_authored_by_any(accounts, post)
     return True
@@ -171,12 +180,6 @@ def cli(
     results = []
     q_limit = 100 if limit <= 100 else math.ceil(limit * 1.25)
 
-    wo_excluded_authors = (
-        partial(is_not_authored_by, wo_authors)
-        if wo_authors
-        else lambda x: True
-    )
-
     if tags:
         for tag in tags:
             q = Query(tag=tag)
@@ -188,7 +191,7 @@ def cli(
                 for d in discussions
                 if has_all_tags(tags, d)
                 and is_authored_by_any(authors, d)
-                and wo_excluded_authors(d)
+                and is_not_authored_by(wo_authors, d)
                 and is_voted_by_any(voters, d)
                 and is_not_voted_by_any(wo_voters, d)
             ]
@@ -204,7 +207,7 @@ def cli(
                 for d in discussions
                 if has_all_tags(tags, d)
                 and is_authored_by_any(authors, d)
-                and wo_excluded_authors(d)
+                and is_not_authored_by(wo_authors, d)
                 and is_voted_by_any(voters, d)
                 and is_not_voted_by_any(wo_voters, d)
             ]
