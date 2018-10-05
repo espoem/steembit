@@ -313,12 +313,14 @@ def vote(ctx, weight, uniform, accounts, force, min_age, max_age):
             if is_voted_by_any([account], result) and not force:
                 LOGGER.info("Already voted by %s. %s", account, result["url"])
                 continue
-            voted = vote_discussion(result, account, weight)
+            voted = vote_discussion(result, account, weight, 3)
         if voted:
             time.sleep(3)
 
 
-def vote_discussion(discussion: Comment, voter: str, weight: float) -> bool:
+def vote_discussion(
+    discussion: Comment, voter: str, weight: float, retry_count: int = None
+) -> bool:
     """Vote a discussion (post, comment) with selected account and vote weight.
 
     :param discussion: Post or comment
@@ -327,17 +329,26 @@ def vote_discussion(discussion: Comment, voter: str, weight: float) -> bool:
     :type voter: str
     :param weight: Vote weight
     :type weight: float
+    :param retry_count: A number of tries
+    :type retry_count: int
     :return: True if vote was successful else False
     :rtype: bool
     """
+    if not retry_count:
+        retry_count = 0
+
+    if retry_count < 0:
+        return False
+
     try:
+        retry_count -= 1
         discussion.upvote(weight, voter)
     except beem.exceptions.VotingInvalidOnArchivedPost:
         LOGGER.info("Invalid post, can't vote. %s", discussion["url"])
         return False
     except:
         LOGGER.exception("Error during upvoting with %s. %s", voter, discussion["url"])
-        return False
+        return vote_discussion(discussion, voter, weight, retry_count - 1)
     else:
         LOGGER.info(
             "Upvote with account %s at weight %s%%. %s",
