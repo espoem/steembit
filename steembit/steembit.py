@@ -10,13 +10,7 @@ from beem.comment import Comment
 from beem.discussions import Discussions, Query
 from prettytable import PrettyTable
 
-from .constants import (
-    DATETIME_FORMATS,
-    LOG_FORMAT,
-    MAX_AGE_HOURS,
-    MIN_AGE_HOURS,
-    STM,
-)
+from .constants import DATETIME_FORMATS, LOG_FORMAT, MAX_AGE_HOURS, MIN_AGE_HOURS, STM
 from .utils import is_paid_out, remove_duplicates
 
 LOGGER = logging.getLogger(__name__)
@@ -205,23 +199,79 @@ def cli(ctx, tags, all_tags, authors, wo_authors, voters, wo_voters, limit, verb
 
 
 @cli.command()
-@click.option("--mode", type=click.Choice(["table"]), default="table", show_default=True, help="Defines the displayed output of the results.")
-@click.option("--number/--no-number", is_flag=True, default=False, show_default=True, help="Include number of the item.")
-@click.option("--author/--no-author", is_flag=True, default=True, show_default=True, help="Include author's")
-@click.option("--link/--no-link", is_flag=True, default=True, show_default=True, help="Include discussion link")
-@click.option("--created/--no-created", is_flag=True, default=True, show_default=True, help="Include time of creation")
-@click.option("--tags/--no-tags", is_flag=True, default=False, show_default=True, help="Include tags")
-@click.option("--comments/--no-comments", is_flag=True, default=False, show_default=True, help="Include number of comments")
-@click.option("--votes/--no-votes", is_flag=True, default=False, show_default=True, help="Include number of votes")
-@click.option("--rewards/--no-rewards", is_flag=True, default=True, show_default=True, help="Include total rewards")
+@click.option(
+    "--mode",
+    type=click.Choice(["table"]),
+    default="table",
+    show_default=True,
+    help="Defines the displayed output of the results.",
+)
+@click.option(
+    "--number/--no-number",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Include number of the item.",
+)
+@click.option(
+    "--author/--no-author",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Include author's",
+)
+@click.option(
+    "--link/--no-link",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Include discussion link",
+)
+@click.option(
+    "--created/--no-created",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Include time of creation",
+)
+@click.option(
+    "--tags/--no-tags",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Include tags",
+)
+@click.option(
+    "--comments/--no-comments",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Include number of comments",
+)
+@click.option(
+    "--votes/--no-votes",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Include number of votes",
+)
+@click.option(
+    "--rewards/--no-rewards",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Include total rewards",
+)
 @click.pass_context
-def print_results(ctx, mode, number, author, link, created, tags, comments, votes, rewards):
+def print_results(
+    ctx, mode, number, author, link, created, tags, comments, votes, rewards
+):
     """Print the results.
 
     :param ctx: Click context
     :type ctx: click.Context
     """
-    results = ctx.obj["RESULTS"]    # type: typing.Collection[Comment]
+    results = ctx.obj["RESULTS"]  # type: typing.Collection[Comment]
 
     pad = len(str(len(results)))
     for idx, result in enumerate(results, 1):
@@ -230,16 +280,22 @@ def print_results(ctx, mode, number, author, link, created, tags, comments, vote
     if mode == "table":
         table = _init_discussions_table()
         _build_discussions_table(results, table)
-        fields = _build_fields_selector(number, author, link, created, tags, comments, votes, rewards)
+        fields = _build_fields_selector(
+            number, author, link, created, tags, comments, votes, rewards
+        )
 
         click.echo(table.get_string(fields=fields))
+
 
 def _build_discussions_table(results, table):
     for idx, r in enumerate(results, 1):
         row = _build_discussion_table_row(r, idx)
         table.add_row(row)
 
-def _build_fields_selector(number, author, link, created, tags, comments, votes, rewards):
+
+def _build_fields_selector(
+    number, author, link, created, tags, comments, votes, rewards
+):
     fields = []
     if number:
         fields.append("Number")
@@ -258,6 +314,7 @@ def _build_fields_selector(number, author, link, created, tags, comments, votes,
     if rewards:
         fields.append("Rewards")
     return fields
+
 
 def _init_discussions_table() -> PrettyTable:
     table = PrettyTable()
@@ -284,8 +341,9 @@ def _build_discussion_table_row(discussion: dict, idx: int) -> list:
     row.append(",".join(discussion.get("tags", [])))
     row.append(len(discussion.get_all_replies()))
     row.append(len(discussion.get_votes()))
-    row.append(str(discussion.get_rewards().get('total_payout')))
+    row.append(str(discussion.get_rewards().get("total_payout")))
     return row
+
 
 @cli.command()
 @click.option(
