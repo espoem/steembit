@@ -10,7 +10,7 @@ LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(__file__), "steembit.log"),
     level=logging.DEBUG,
-    format=LOG_FORMAT
+    format=LOG_FORMAT,
 )
 
 

@@ -47,10 +47,13 @@ def find_block_num_by_datetime(
 
     return None
 
+
 def get_block_number(dt: datetime):
     BLOCKS_PER_SECOND = 3
-    ANCHOR_BLOCK = 26471727
-    ANCHOR_DATE = datetime(year=2018, month=10, day=3, hour=2, minute=24, second=54, tzinfo=timezone.utc)
+    ANCHOR_BLOCK = 26_471_727
+    ANCHOR_DATE = datetime(
+        year=2018, month=10, day=3, hour=2, minute=24, second=54, tzinfo=timezone.utc
+    )
 
     if dt and not dt.tzinfo:
         dt.replace(tzinfo=timezone.utc)
