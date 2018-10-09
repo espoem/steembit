@@ -1,9 +1,12 @@
-from setuptools import setup, find_packages
 import os
+
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "./README.md"), "r") as f:
     readme = f.read()
+
+requirements = ["Click", "beem", "PTable"]
 
 setup(
     name="steembit",
@@ -16,7 +19,7 @@ setup(
     author_email="martin.smid94@seznam.cz",
     license="MIT",
     keywords="steem cli",
-    install_requires=["Click", "beem"],
+    install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3.6",
