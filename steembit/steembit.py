@@ -10,7 +10,7 @@ from beem.comment import Comment
 from beem.discussions import Discussions, Query
 from prettytable import PrettyTable
 
-from .constants import DATETIME_FORMATS, LOG_FORMAT, MAX_AGE_HOURS, MIN_AGE_HOURS, STM
+from .constants import LOG_FORMAT, MAX_AGE_HOURS, STM
 from .utils import is_paid_out, remove_duplicates
 
 LOGGER = logging.getLogger(__name__)
